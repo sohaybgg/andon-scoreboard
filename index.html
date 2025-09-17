@@ -3,10 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>Plant Floor Scoreboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
+      font-family: 'Orbitron', sans-serif;
+      background: #111;
+      color: #fff;
       display: flex;
       justify-content: center;
       padding: 20px;
@@ -19,37 +21,43 @@
     }
     .shift {
       flex: 1;
-      background: white;
+      background: #222;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-shadow: 0 0 20px #0f0;
     }
     .header {
-      font-size: 1.5em;
-      margin-bottom: 10px;
+      font-size: 2em;
+      text-align: center;
+      margin-bottom: 20px;
+      color: #0f0;
     }
     .metrics {
       display: flex;
-      justify-content: space-between;
-      margin-bottom: 15px;
+      justify-content: space-around;
+      font-size: 1.5em;
+      margin-bottom: 20px;
     }
     .ftq {
-      padding: 5px 10px;
+      padding: 5px 15px;
       border-radius: 5px;
-      color: white;
       font-weight: bold;
     }
-    .green { background: green; }
-    .yellow { background: goldenrod; }
-    .red { background: crimson; }
+    .green { background: #0f0; color: #000; }
+    .yellow { background: #ff0; color: #000; }
+    .red { background: #f00; color: #fff; }
     table {
       width: 100%;
       border-collapse: collapse;
+      font-size: 1.2em;
     }
     th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
+      border: 1px solid #444;
+      padding: 10px;
       text-align: center;
+    }
+    th {
+      background: #333;
     }
   </style>
 </head>
@@ -83,24 +91,23 @@
   </div>
 
   <script>
-    // 🔌 STEP 1: Replace this with your Google Sheets API call
+    // 🔌 Replace this with your actual Google Sheets API call
     async function fetchGoogleSheetData() {
-      // Example structure — replace with actual fetch logic
+      // Simulated data for demo — replace with live fetch logic
       return {
-        shift1: [
-          { hour: 1, parts: 120, defects: 1 },
-          { hour: 2, parts: 130, defects: 0 },
-          // ...
-        ],
-        shift2: [
-          { hour: 1, parts: 110, defects: 2 },
-          { hour: 2, parts: 125, defects: 1 },
-          // ...
-        ]
+        shift1: Array.from({ length: 8 }, (_, i) => ({
+          hour: i + 1,
+          parts: Math.floor(Math.random() * 50 + 100),
+          defects: Math.floor(Math.random() * 3)
+        })),
+        shift2: Array.from({ length: 8 }, (_, i) => ({
+          hour: i + 1,
+          parts: Math.floor(Math.random() * 50 + 100),
+          defects: Math.floor(Math.random() * 3)
+        }))
       };
     }
 
-    // 🧠 STEP 2: Render shift data
     function renderShift(shiftNum, data) {
       const table = document.getElementById(`table${shiftNum}`);
       const tputElem = document.getElementById(`tput${shiftNum}`);
@@ -119,7 +126,6 @@
       tputElem.textContent = totalParts;
       ftqElem.textContent = `${ftq.toFixed(1)}%`;
 
-      // 🎨 STEP 3: Apply FTQ color coding
       ftqElem.className = `ftq ${
         ftq >= 98.5 ? 'green' :
         ftq >= 97 ? 'yellow' :
@@ -127,14 +133,15 @@
       }`;
     }
 
-    // 🚀 STEP 4: Initialize
-    async function init() {
+    async function updateDisplay() {
       const data = await fetchGoogleSheetData();
       renderShift('1', data.shift1);
       renderShift('2', data.shift2);
     }
 
-    init();
+    // 🔁 Live updates every second
+    updateDisplay();
+    setInterval(updateDisplay, 1000);
   </script>
 </body>
 </html>
