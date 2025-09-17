@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Plant Floor Scoreboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: #111;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      display: flex;
+      gap: 20px;
+      width: 100%;
+      max-width: 1200px;
+    }
+    .shift {
+      flex: 1;
+      background: #222;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px #0f0;
+    }
+    .header {
+      font-size: 2em;
+      text-align: center;
+      margin-bottom: 20px;
+      color: #0f0;
+    }
+    .metrics {
+      display: flex;
+      justify-content: space-around;
+      font-size: 1.5em;
+      margin-bottom: 20px;
+    }
+    .ftq {
+      padding: 5px 15px;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .green { background: #0f0; color: #000; }
+    .yellow { background: #ff0; color: #000; }
+    .red { background: #f00; color: #fff; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 1.2em;
+    }
+    th, td {
+      border: 1px solid #444;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 1st Shift -->
+    <div class="shift" id="shift1">
+      <div class="header">1st Shift</div>
+      <div class="metrics">
+        <div>TPUT: <span id="tput1">--</span></div>
+        <div>FTQ: <span id="ftq1" class="ftq">--%</span></div>
+      </div>
+      <table>
+        <thead><tr><th>Hour</th><th>Parts</th><th>Defects</th></tr></thead>
+        <tbody id="table1"></tbody>
+      </table>
+    </div>
+
+    <!-- 2nd Shift -->
+    <div class="shift" id="shift2">
+      <div class="header">2nd Shift</div>
+      <div class="metrics">
+        <div>TPUT: <span id="tput2">--</span></div>
+        <div>FTQ: <span id="ftq2" class="ftq">--%</span></div>
+      </div>
+      <table>
+        <thead><tr><th>Hour</th><th>Parts</th><th>Defects</th></tr></thead>
+        <tbody id="table2"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // 🔌 Replace this with your actual Google Sheets API call
+    async function fetchGoogleSheetData() {
+      // Simulated data for demo — replace with live fetch logic
+      return {
+        shift1: Array.from({ length: 8 }, (_, i) => ({
+          hour: i + 1,
+          parts: Math.floor(Math.random() * 50 + 100),
+          defects: Math.floor(Math.random() * 3)
+        })),
+        shift2: Array.from({ length: 8 }, (_, i) => ({
+          hour: i + 1,
+          parts: Math.floor(Math.random() * 50 + 100),
+          defects: Math.floor(Math.random() * 3)
+        }))
+      };
+    }
+
+    function renderShift(shiftNum, data) {
+      const table = document.getElementById(`table${shiftNum}`);
+      const tputElem = document.getElementById(`tput${shiftNum}`);
+      const ftqElem = document.getElementById(`ftq${shiftNum}`);
+
+      table.innerHTML = '';
+      let totalParts = 0, totalDefects = 0;
+
+      data.forEach(row => {
+        totalParts += row.parts;
+        totalDefects += row.defects;
+        table.innerHTML += `<tr><td>${row.hour}</td><td>${row.parts}</td><td>${row.defects}</td></tr>`;
+      });
+
+      const ftq = totalParts === 0 ? 0 : ((totalParts - totalDefects) / totalParts) * 100;
+      tputElem.textContent = totalParts;
+      ftqElem.textContent = `${ftq.toFixed(1)}%`;
+
+      ftqElem.className = `ftq ${
+        ftq >= 98.5 ? 'green' :
+        ftq >= 97 ? 'yellow' :
+        'red'
+      }`;
+    }
+
+    async function updateDisplay() {
+      const data = await fetchGoogleSheetData();
+      renderShift('1', data.shift1);
+      renderShift('2', data.shift2);
+    }
+
+    // 🔁 Live updates every second
+    updateDisplay();
+    setInterval(updateDisplay, 1000);
+  </script>
+</body>
+</html>
