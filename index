@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Plant Floor Scoreboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      display: flex;
+      gap: 20px;
+      width: 100%;
+      max-width: 1200px;
+    }
+    .shift {
+      flex: 1;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .header {
+      font-size: 1.5em;
+      margin-bottom: 10px;
+    }
+    .metrics {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+    .ftq {
+      padding: 5px 10px;
+      border-radius: 5px;
+      color: white;
+      font-weight: bold;
+    }
+    .green { background: green; }
+    .yellow { background: goldenrod; }
+    .red { background: crimson; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 1st Shift -->
+    <div class="shift" id="shift1">
+      <div class="header">1st Shift</div>
+      <div class="metrics">
+        <div>TPUT: <span id="tput1">--</span></div>
+        <div>FTQ: <span id="ftq1" class="ftq">--%</span></div>
+      </div>
+      <table>
+        <thead><tr><th>Hour</th><th>Parts</th><th>Defects</th></tr></thead>
+        <tbody id="table1"></tbody>
+      </table>
+    </div>
+
+    <!-- 2nd Shift -->
+    <div class="shift" id="shift2">
+      <div class="header">2nd Shift</div>
+      <div class="metrics">
+        <div>TPUT: <span id="tput2">--</span></div>
+        <div>FTQ: <span id="ftq2" class="ftq">--%</span></div>
+      </div>
+      <table>
+        <thead><tr><th>Hour</th><th>Parts</th><th>Defects</th></tr></thead>
+        <tbody id="table2"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // 🔌 STEP 1: Replace this with your Google Sheets API call
+    async function fetchGoogleSheetData() {
+      // Example structure — replace with actual fetch logic
+      return {
+        shift1: [
+          { hour: 1, parts: 120, defects: 1 },
+          { hour: 2, parts: 130, defects: 0 },
+          // ...
+        ],
+        shift2: [
+          { hour: 1, parts: 110, defects: 2 },
+          { hour: 2, parts: 125, defects: 1 },
+          // ...
+        ]
+      };
+    }
+
+    // 🧠 STEP 2: Render shift data
+    function renderShift(shiftNum, data) {
+      const table = document.getElementById(`table${shiftNum}`);
+      const tputElem = document.getElementById(`tput${shiftNum}`);
+      const ftqElem = document.getElementById(`ftq${shiftNum}`);
+
+      table.innerHTML = '';
+      let totalParts = 0, totalDefects = 0;
+
+      data.forEach(row => {
+        totalParts += row.parts;
+        totalDefects += row.defects;
+        table.innerHTML += `<tr><td>${row.hour}</td><td>${row.parts}</td><td>${row.defects}</td></tr>`;
+      });
+
+      const ftq = totalParts === 0 ? 0 : ((totalParts - totalDefects) / totalParts) * 100;
+      tputElem.textContent = totalParts;
+      ftqElem.textContent = `${ftq.toFixed(1)}%`;
+
+      // 🎨 STEP 3: Apply FTQ color coding
+      ftqElem.className = `ftq ${
+        ftq >= 98.5 ? 'green' :
+        ftq >= 97 ? 'yellow' :
+        'red'
+      }`;
+    }
+
+    // 🚀 STEP 4: Initialize
+    async function init() {
+      const data = await fetchGoogleSheetData();
+      renderShift('1', data.shift1);
+      renderShift('2', data.shift2);
+    }
+
+    init();
+  </script>
+</body>
+</html>
