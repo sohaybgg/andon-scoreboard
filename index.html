@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Plant Floor Scoreboard</title>
+  <title>Plant Floor Scoreboard - Arena Edition</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
   <style>
     body {
@@ -10,8 +10,14 @@
       background: #111;
       color: #fff;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      align-items: center;
       padding: 20px;
+    }
+    #clock {
+      font-size: 2em;
+      margin-bottom: 15px;
+      color: #0f0;
     }
     .container {
       display: flex;
@@ -42,11 +48,12 @@
       padding: 5px 15px;
       border-radius: 5px;
       font-weight: bold;
-      color: white; /* Default FTQ text */
+      color: white;
+      animation: pulse 1.5s infinite;
     }
     .green {
       background: #0f0;
-      color: #000; /* 🟢 Green FTQ when ≥ 98.5% */
+      color: #000;
     }
     .yellow {
       background: #ff0;
@@ -55,6 +62,11 @@
     .red {
       background: #f00;
       color: #fff;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 10px currentColor; }
+      50% { box-shadow: 0 0 25px currentColor; }
+      100% { box-shadow: 0 0 10px currentColor; }
     }
     table {
       width: 100%;
@@ -69,9 +81,34 @@
     th {
       background: #333;
     }
+    tbody tr:nth-child(even) {
+      background: rgba(255,255,255,0.05);
+    }
+    @keyframes flash {
+      0% { background: yellow; }
+      100% { background: transparent; }
+    }
+    .updated {
+      animation: flash 0.5s;
+    }
+    #fullscreenBtn {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 1em;
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #fullscreenBtn:hover {
+      background: darkred;
+    }
   </style>
 </head>
 <body>
+  <div id="clock"></div>
+
   <div class="container">
     <!-- 1st Shift -->
     <div class="shift" id="shift1">
@@ -100,10 +137,20 @@
     </div>
   </div>
 
+  <button id="fullscreenBtn" onclick="toggleFullScreen()">Toggle Fullscreen</button>
+
   <script>
-    // 🔌 Replace this with your actual Google Sheets API call
+    // 🕒 Live Clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').textContent = now.toLocaleTimeString();
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // 🔌 Replace with Google Sheets API call
     async function fetchGoogleSheetData() {
-      // Simulated data for demo — replace with live fetch logic
+      // Simulated data for demo
       return {
         shift1: Array.from({ length: 8 }, (_, i) => ({
           hour: i + 1,
@@ -116,6 +163,14 @@
           defects: Math.floor(Math.random() * 3)
         }))
       };
+    }
+
+    function animateChange(elem, newValue) {
+      if (elem.textContent !== newValue) {
+        elem.textContent = newValue;
+        elem.classList.add('updated');
+        setTimeout(() => elem.classList.remove('updated'), 500);
+      }
     }
 
     function renderShift(shiftNum, data) {
@@ -133,8 +188,8 @@
       });
 
       const ftq = totalParts === 0 ? 0 : ((totalParts - totalDefects) / totalParts) * 100;
-      tputElem.textContent = totalParts;
-      ftqElem.textContent = `${ftq.toFixed(1)}%`;
+      animateChange(tputElem, totalParts.toString());
+      animateChange(ftqElem, `${ftq.toFixed(1)}%`);
 
       ftqElem.className = `ftq ${
         ftq >= 98.5 ? 'green' :
@@ -152,6 +207,15 @@
     // 🔁 Live updates every second
     updateDisplay();
     setInterval(updateDisplay, 1000);
+
+    // 🖥 Fullscreen Toggle
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    }
   </script>
 </body>
 </html>
