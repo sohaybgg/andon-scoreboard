@@ -14,11 +14,18 @@
       align-items: center;
       padding: 20px;
     }
-    #clock {
-      font-size: 2em;
+    /* Top bar with clock (left) and date (right) */
+    #topbar {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 1200px;
       margin-bottom: 15px;
-      color: #0f0;
+      font-size: 1.5em;
     }
+    #clock { color: #0f0; }
+    #date { color: #0f0; }
+
     .container {
       display: flex;
       gap: 20px;
@@ -51,23 +58,16 @@
       color: white;
       animation: pulse 1.5s infinite;
     }
-    .green {
-      background: #0f0;
-      color: #000;
-    }
-    .yellow {
-      background: #ff0;
-      color: #000;
-    }
-    .red {
-      background: #f00;
-      color: #fff;
-    }
+    .green { background: #0f0; color: #000; }
+    .yellow { background: #ff0; color: #000; }
+    .red { background: #f00; color: #fff; }
+
     @keyframes pulse {
       0% { box-shadow: 0 0 10px currentColor; }
       50% { box-shadow: 0 0 25px currentColor; }
       100% { box-shadow: 0 0 10px currentColor; }
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -78,36 +78,44 @@
       padding: 10px;
       text-align: center;
     }
-    th {
-      background: #333;
-    }
-    tbody tr:nth-child(even) {
-      background: rgba(255,255,255,0.05);
-    }
+    th { background: #333; }
+    tbody tr:nth-child(even) { background: rgba(255,255,255,0.05); }
+
     @keyframes flash {
       0% { background: yellow; }
       100% { background: transparent; }
     }
-    .updated {
-      animation: flash 0.5s;
-    }
+    .updated { animation: flash 0.5s; }
+
+    /* Small, subtle fullscreen button in bottom-right */
     #fullscreenBtn {
-      margin-top: 15px;
-      padding: 10px 20px;
-      font-size: 1em;
-      background: red;
-      color: white;
+      position: fixed;
+      bottom: 15px;
+      right: 15px;
+      background: rgba(255,0,0,0.8);
       border: none;
-      border-radius: 5px;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      font-size: 1.2em;
+      color: white;
       cursor: pointer;
+      box-shadow: 0 0 8px red;
+      opacity: 0.2;
+      transition: opacity 0.3s ease;
     }
     #fullscreenBtn:hover {
-      background: darkred;
+      opacity: 1;
+      background: red;
     }
   </style>
 </head>
 <body>
-  <div id="clock"></div>
+  <!-- Top bar with clock and date -->
+  <div id="topbar">
+    <div id="clock"></div>
+    <div id="date"></div>
+  </div>
 
   <div class="container">
     <!-- 1st Shift -->
@@ -137,16 +145,18 @@
     </div>
   </div>
 
-  <button id="fullscreenBtn" onclick="toggleFullScreen()">Toggle Fullscreen</button>
+  <!-- Small fullscreen toggle -->
+  <button id="fullscreenBtn" onclick="toggleFullScreen()">⛶</button>
 
   <script>
-    // 🕒 Live Clock
-    function updateClock() {
+    // 🕒 Live Clock & Date
+    function updateClockAndDate() {
       const now = new Date();
       document.getElementById('clock').textContent = now.toLocaleTimeString();
+      document.getElementById('date').textContent = now.toLocaleDateString();
     }
-    setInterval(updateClock, 1000);
-    updateClock();
+    setInterval(updateClockAndDate, 1000);
+    updateClockAndDate();
 
     // 🔌 Replace with Google Sheets API call
     async function fetchGoogleSheetData() {
