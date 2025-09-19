@@ -221,4 +221,25 @@
   }
 
   // Build ticker message
-  function build
+  function buildDefectsMessage(data) {
+    const messages = [];
+    const last1 = data.shift1[data.shift1.length - 1];
+    const last2 = data.shift2[data.shift2.length - 1];
+
+    if (last1 && last1.defects > 0) {
+      messages.push(`Shift 1 Hour ${last1.hour}: ${last1.defects} defect(s)`);
+    }
+    if (last2 && last2.defects > 0) {
+      messages.push(`Shift 2 Hour ${last2.hour}: ${last2.defects} defect(s)`);
+    }
+    if (messages.length === 0) {
+      messages.push('No defects reported');
+    }
+    return messages.join(' | ');
+  }
+
+  let lastDefectsMessage = "";
+
+  async function checkDefectsTicker
+
+
