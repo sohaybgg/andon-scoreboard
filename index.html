@@ -39,25 +39,29 @@
       width: 100%;
       max-width: 1200px;
     }
+
     .shift {
       flex: 1;
       background: #222;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 0 20px red; /* 🔴 Red glow */
+      box-shadow: 0 0 20px red; /* Red glow */
     }
+
     .header {
       font-size: 2em;
       text-align: center;
       margin-bottom: 20px;
-      color: red; /* 🔴 Header text */
+      color: red; /* Red header text */
     }
+
     .metrics {
       display: flex;
       justify-content: space-around;
       font-size: 1.5em;
       margin-bottom: 20px;
     }
+
     .ftq {
       padding: 5px 15px;
       border-radius: 5px;
@@ -65,6 +69,7 @@
       color: white;
       animation: pulse 1.5s infinite;
     }
+
     .green { background: #0f0; color: #000; }
     .yellow { background: #ff0; color: #000; }
     .red { background: #f00; color: #fff; }
@@ -80,11 +85,13 @@
       border-collapse: collapse;
       font-size: 1.2em;
     }
+
     th, td {
       border: 1px solid #444;
       padding: 10px;
       text-align: center;
     }
+
     th { background: #333; }
     tbody tr:nth-child(even) { background: rgba(255,255,255,0.05); }
 
@@ -92,12 +99,13 @@
       0% { background: yellow; }
       100% { background: transparent; }
     }
+
     .updated { animation: flash 0.5s; }
 
-    /* Small, subtle fullscreen button in bottom-right */
+    /* Small, subtle fullscreen button in bottom-right (raised above ticker) */
     #fullscreenBtn {
       position: fixed;
-      bottom: 50px; /* moved up to not overlap ticker */
+      bottom: 50px;
       right: 15px;
       background: rgba(255,0,0,0.8);
       border: none;
@@ -112,6 +120,7 @@
       transition: opacity 0.3s ease;
       z-index: 1001;
     }
+
     #fullscreenBtn:hover {
       opacity: 1;
       background: red;
@@ -132,11 +141,13 @@
       overflow: hidden;
       z-index: 1000;
     }
+
     #latestDefects span {
       display: inline-block;
       padding-left: 100%;
       animation: scrollText 15s linear infinite;
     }
+
     @keyframes scrollText {
       0% { transform: translateX(0); }
       100% { transform: translateX(-100%); }
@@ -178,13 +189,13 @@
   </div>
 
   <!-- Small fullscreen toggle -->
-  <button id="fullscreenBtn" onclick="toggleFullScreen()">⛶</button>
+  <button id="fullscreenBtn" onclick="toggleFullScreen()" title="Toggle Fullscreen">⛶</button>
 
   <!-- Latest Defects ticker -->
   <div id="latestDefects"></div>
 
   <script>
-    // 🕒 Live Clock & Date
+    // Live Clock & Date
     function updateClockAndDate() {
       const now = new Date();
       document.getElementById('clock').textContent = now.toLocaleTimeString();
@@ -193,7 +204,7 @@
     setInterval(updateClockAndDate, 1000);
     updateClockAndDate();
 
-    // 🔌 Replace with Google Sheets API call
+    // Replace with Google Sheets API call when ready
     async function fetchGoogleSheetData() {
       // Simulated data for demo
       return {
@@ -241,4 +252,48 @@
         ftq >= 97 ? 'yellow' :
         'red'
       }`;
-   
+    }
+
+    function updateLatestDefects(data) {
+      let messages = [];
+
+      // Get the most recent hour entry from each shift
+      const last1 = data.shift1[data.shift1.length - 1];
+      const last2 = data.shift2[data.shift2.length - 1];
+
+      if (last1 && last1.defects > 0) {
+        messages.push(`Shift 1 Hour ${last1.hour}: ${last1.defects} defect(s)`);
+      }
+      if (last2 && last2.defects > 0) {
+        messages.push(`Shift 2 Hour ${last2.hour}: ${last2.defects} defect(s)`);
+      }
+
+      if (messages.length === 0) {
+        messages.push('No defects reported');
+      }
+
+      document.getElementById('latestDefects').innerHTML = `<span>${messages.join(' | ')}</span>`;
+    }
+
+    async function updateDisplay() {
+      const data = await fetchGoogleSheetData();
+      renderShift('1', data.shift1);
+      renderShift('2', data.shift2);
+      updateLatestDefects(data);
+    }
+
+    // Live updates every second
+    updateDisplay();
+    setInterval(updateDisplay, 1000);
+
+    // Fullscreen Toggle
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    }
+  </script>
+</body>
+</html>
