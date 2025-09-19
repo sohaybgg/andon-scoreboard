@@ -6,7 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet" />
-  <link rel="icon" type="image/png" href="/favicon.png">
+
+  <!-- Favicon setup for GitHub Pages -->
+  <link rel="icon" type="image/png" href="favicon.png?v=1">
+  <link rel="shortcut icon" type="image/png" href="favicon.png?v=1">
+
   <style>
     /* =========================
        Base layout & theme
@@ -239,165 +243,10 @@
        - Includes placeholder defectDetails for ticker
        ============================================================ */
     async function fetchGoogleSheetData() {
-      // Simulate rows per shift
       const genShiftRows = () => Array.from({ length: 8 }, (_, i) => {
         const parts = Math.floor(Math.random() * 50 + 100);
         const defects = Math.floor(Math.random() * 3);
-        // Build placeholder defect detail list matching the defects count
         const defectDetails = Array.from({ length: defects }, (_, d) => `Defect ${d + 1}`);
-        return {
-          hour: i + 1,
-          parts,
-          defects,
-          defectDetails
-        };
+        return { hour: i + 1, parts, defects, defectDetails };
       });
-
       return {
-        shift1: genShiftRows(),
-        shift2: genShiftRows()
-      };
-    }
-
-    /* ============================================================
-       Animation helper for numbers (adds subtle flash)
-       ============================================================ */
-    function animateChange(elem, newValue) {
-      if (elem.textContent !== newValue) {
-        elem.textContent = newValue;
-        elem.classList.add('updated');
-        setTimeout(() => elem.classList.remove('updated'), 500);
-      }
-    }
-
-    /* ============================================================
-       Render a single shift panel (table + TPUT + FTQ)
-       ============================================================ */
-    function renderShift(shiftNum, data) {
-      const table = document.getElementById(`table${shiftNum}`);
-      const tputElem = document.getElementById(`tput${shiftNum}`);
-      const ftqElem = document.getElementById(`ftq${shiftNum}`);
-
-      // Build table rows as one string for performance
-      let rowsHtml = '';
-      let totalParts = 0, totalDefects = 0;
-
-      data.forEach(row => {
-        totalParts += row.parts;
-        totalDefects += row.defects;
-        rowsHtml += `<tr><td>${row.hour}</td><td>${row.parts}</td><td>${row.defects}</td></tr>`;
-      });
-
-      table.innerHTML = rowsHtml;
-
-      // Compute FTQ and update metrics with animation
-      const ftq = totalParts === 0 ? 0 : ((totalParts - totalDefects) / totalParts) * 100;
-      animateChange(tputElem, totalParts.toString());
-      animateChange(ftqElem, `${ftq.toFixed(1)}%`);
-
-      // FTQ color thresholds
-      ftqElem.className = `ftq ${
-        ftq >= 98.5 ? 'green' :
-        ftq >= 97   ? 'yellow' :
-                      'red'
-      }`;
-    }
-
-    /* ============================================================
-       Scoreboard update loop (every 1 second)
-       - Decoupled from ticker
-       ============================================================ */
-    async function updateScoreboard() {
-      try {
-        const data = await fetchGoogleSheetData();
-        renderShift('1', data.shift1);
-        renderShift('2', data.shift2);
-      } catch (err) {
-        console.error('Scoreboard update failed:', err);
-      }
-    }
-
-    /* ============================================================
-       Ticker message builder
-       - Shows ONLY current shift (for now: Shift 1) & its latest hour
-       - Appends placeholder defect details: "Defect 1, Defect 2"
-       - If no defects: "No defects reported"
-       ============================================================ */
-    function buildDefectsMessage(data) {
-      // Current shift placeholder: Shift 1 (we'll add time-based logic later)
-      const shiftName = 'Shift 1';
-      const rows = data.shift1 || [];
-      const last = rows[rows.length - 1];
-
-      if (!last) return `${shiftName}: No data available`;
-
-      if (last.defects > 0) {
-        const details = (Array.isArray(last.defectDetails) && last.defectDetails.length > 0)
-          ? last.defectDetails.join(', ')
-          : Array.from({ length: last.defects }, (_, i) => `Defect ${i + 1}`).join(', ');
-        return `${shiftName} Hour ${last.hour}: ${last.defects} defect(s) — ${details}`;
-      }
-
-      return `${shiftName} Hour ${last.hour}: No defects reported`;
-    }
-
-    /* ============================================================
-       Ticker loop (decoupled)
-       - Scrolls endlessly; only updates DOM when content changes
-       ============================================================ */
-    let lastDefectsMessage = '';
-
-    async function checkDefectsTicker() {
-      try {
-        const data = await fetchGoogleSheetData();
-        const newMessage = buildDefectsMessage(data);
-
-        // Only replace inner <span> when message actually changes
-        if (newMessage !== lastDefectsMessage) {
-          lastDefectsMessage = newMessage;
-          const ticker = document.getElementById('latestDefects');
-          ticker.innerHTML = `<span>${newMessage}</span>`;
-        }
-      } catch (err) {
-        console.error('Ticker update failed:', err);
-      }
-    }
-
-    /* ============================================================
-       Fullscreen control
-       ============================================================ */
-    function toggleFullScreen() {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-      } else {
-        document.exitFullscreen();
-      }
-    }
-
-    /* ============================================================
-       Bootstrapping: start all loops without truncation
-       ============================================================ */
-    function startLoops() {
-      // Initial paints
-      updateClockAndDate();
-      updateScoreboard();
-      checkDefectsTicker();
-
-      // Timers
-      setInterval(updateClockAndDate, 1000);   // Clock/date (1s)
-      setInterval(updateScoreboard, 1000);     // Scoreboard (1s)
-      setInterval(checkDefectsTicker, 5000);   // Ticker check (5s, decoupled)
-    }
-
-    // Bind fullscreen control
-    document.getElementById('fullscreenBtn').addEventListener('click', toggleFullScreen);
-
-    // DOM ready guards
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', startLoops);
-    } else {
-      startLoops();
-    }
-  </script>
-</body>
-</html>
