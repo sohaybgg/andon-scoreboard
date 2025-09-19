@@ -145,7 +145,7 @@
     #latestDefects span {
       display: inline-block;
       padding-left: 100%;
-      animation: scrollText 15s linear infinite;
+      animation: scrollText 40s linear infinite; /* slower scroll */
     }
 
     @keyframes scrollText {
@@ -204,9 +204,8 @@
     setInterval(updateClockAndDate, 1000);
     updateClockAndDate();
 
-    // Replace with Google Sheets API call when ready
+    // Simulated data fetch (replace with Google Sheets API)
     async function fetchGoogleSheetData() {
-      // Simulated data for demo
       return {
         shift1: Array.from({ length: 8 }, (_, i) => ({
           hour: i + 1,
@@ -254,46 +253,9 @@
       }`;
     }
 
+    // Ticker logic
+    let lastDefectsMessage = "";
     function updateLatestDefects(data) {
       let messages = [];
 
-      // Get the most recent hour entry from each shift
-      const last1 = data.shift1[data.shift1.length - 1];
-      const last2 = data.shift2[data.shift2.length - 1];
-
-      if (last1 && last1.defects > 0) {
-        messages.push(`Shift 1 Hour ${last1.hour}: ${last1.defects} defect(s)`);
-      }
-      if (last2 && last2.defects > 0) {
-        messages.push(`Shift 2 Hour ${last2.hour}: ${last2.defects} defect(s)`);
-      }
-
-      if (messages.length === 0) {
-        messages.push('No defects reported');
-      }
-
-      document.getElementById('latestDefects').innerHTML = `<span>${messages.join(' | ')}</span>`;
-    }
-
-    async function updateDisplay() {
-      const data = await fetchGoogleSheetData();
-      renderShift('1', data.shift1);
-      renderShift('2', data.shift2);
-      updateLatestDefects(data);
-    }
-
-    // Live updates every second
-    updateDisplay();
-    setInterval(updateDisplay, 1000);
-
-    // Fullscreen Toggle
-    function toggleFullScreen() {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-      } else {
-        document.exitFullscreen();
-      }
-    }
-  </script>
-</body>
-</html>
+      const last1 = data.shift1[data.shift1.length - 1
