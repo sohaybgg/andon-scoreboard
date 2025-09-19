@@ -1,161 +1,183 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Plant Floor Scoreboard - Arena Edition</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet" />
-<style>
-  body {
-    font-family: 'Orbitron', sans-serif;
-    background: #111;
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    position: relative;
-  }
+  <meta charset="UTF-8" />
+  <title>Plant Floor Scoreboard - Arena Edition</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet" />
+  <style>
+    /* =========================
+       Base layout & theme
+       ========================= */
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: #111;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      position: relative;
+    }
 
-  /* Big centered clock */
-  #clock {
-    font-size: 2.5em;
-    color: #0f0;
-    text-align: center;
-    margin-bottom: 10px;
-  }
+    /* =========================
+       Clock & date
+       ========================= */
+    /* Big centered clock */
+    #clock {
+      font-size: 2.5em;
+      color: #0f0;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    /* Date in top-right corner */
+    #date {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 1.2em;
+      color: #0f0;
+    }
 
-  /* Date in top-right corner */
-  #date {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    font-size: 1.2em;
-    color: #0f0;
-  }
+    /* =========================
+       Container & shift panels
+       ========================= */
+    .container {
+      display: flex;
+      gap: 20px;
+      width: 100%;
+      max-width: 1200px;
+    }
+    .shift {
+      flex: 1;
+      background: #222;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px red; /* 🔴 Red glow */
+    }
+    .header {
+      font-size: 2em;
+      text-align: center;
+      margin-bottom: 20px;
+      color: red; /* 🔴 Header text */
+    }
 
-  .container {
-    display: flex;
-    gap: 20px;
-    width: 100%;
-    max-width: 1200px;
-  }
+    /* =========================
+       Metrics row
+       ========================= */
+    .metrics {
+      display: flex;
+      justify-content: space-around;
+      font-size: 1.5em;
+      margin-bottom: 20px;
+    }
+    .ftq {
+      padding: 5px 15px;
+      border-radius: 5px;
+      font-weight: bold;
+      color: white;
+      animation: pulse 1.5s infinite; /* 🎯 Pulsing FTQ */
+    }
+    .green { background: #0f0; color: #000; }
+    .yellow { background: #ff0; color: #000; }
+    .red { background: #f00; color: #fff; }
 
-  .shift {
-    flex: 1;
-    background: #222;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 20px red; /* Red glow */
-  }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 10px currentColor; }
+      50% { box-shadow: 0 0 25px currentColor; }
+      100% { box-shadow: 0 0 10px currentColor; }
+    }
 
-  .header {
-    font-size: 2em;
-    text-align: center;
-    margin-bottom: 20px;
-    color: red; /* Red header text */
-  }
+    /* =========================
+       Tables
+       ========================= */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 1.2em;
+    }
+    th, td {
+      border: 1px solid #444;
+      padding: 10px;
+      text-align: center;
+    }
+    th { background: #333; }
+    tbody tr:nth-child(even) { background: rgba(255,255,255,0.05); } /* Zebra rows */
 
-  .metrics {
-    display: flex;
-    justify-content: space-around;
-    font-size: 1.5em;
-    margin-bottom: 20px;
-  }
+    /* 🔔 Animated number changes */
+    @keyframes flash {
+      0% { background: yellow; }
+      100% { background: transparent; }
+    }
+    .updated { animation: flash 0.5s; }
 
-  .ftq {
-    padding: 5px 15px;
-    border-radius: 5px;
-    font-weight: bold;
-    color: white;
-    animation: pulse 1.5s infinite;
-  }
+    /* =========================
+       Fullscreen button
+       ========================= */
+    /* Small, subtle button above ticker */
+    #fullscreenBtn {
+      position: fixed;
+      bottom: 50px; /* sits above ticker */
+      right: 15px;
+      background: rgba(255,0,0,0.8);
+      border: none;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      font-size: 1.2em;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 0 8px red;
+      opacity: 0.2;
+      transition: opacity 0.3s ease;
+      z-index: 1001;
+    }
+    #fullscreenBtn:hover {
+      opacity: 1;
+      background: red;
+    }
 
-  .green { background: #0f0; color: #000; }
-  .yellow { background: #ff0; color: #000; }
-  .red { background: #f00; color: #fff; }
-
-  @keyframes pulse {
-    0% { box-shadow: 0 0 10px currentColor; }
-    50% { box-shadow: 0 0 25px currentColor; }
-    100% { box-shadow: 0 0 10px currentColor; }
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 1.2em;
-  }
-
-  th, td {
-    border: 1px solid #444;
-    padding: 10px;
-    text-align: center;
-  }
-
-  th { background: #333; }
-  tbody tr:nth-child(even) { background: rgba(255,255,255,0.05); }
-
-  @keyframes flash {
-    0% { background: yellow; }
-    100% { background: transparent; }
-  }
-  .updated { animation: flash 0.5s; }
-
-  /* Small fullscreen button above ticker */
-  #fullscreenBtn {
-    position: fixed;
-    bottom: 50px; /* above the ticker */
-    right: 15px;
-    background: rgba(255,0,0,0.8);
-    border: none;
-    border-radius: 50%;
-    width: 35px;
-    height: 35px;
-    font-size: 1.2em;
-    color: white;
-    cursor: pointer;
-    box-shadow: 0 0 8px red;
-    opacity: 0.2;
-    transition: opacity 0.3s ease;
-    z-index: 1001;
-  }
-  #fullscreenBtn:hover { opacity: 1; background: red; }
-
-  /* Latest Defects ticker */
-  #latestDefects {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: #222;
-    color: #fff;
-    font-size: 1.2em;
-    padding: 8px 15px;
-    box-shadow: 0 -2px 10px rgba(255,0,0,0.5);
-    white-space: nowrap;
-    overflow: hidden;
-    z-index: 1000;
-  }
-  #latestDefects span {
-    display: inline-block;
-    padding-left: 100%;
-    animation: scrollText 40s linear infinite; /* slow crawl */
-  }
-  @keyframes scrollText {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-100%); }
-  }
-</style>
+    /* =========================
+       Latest defects ticker
+       ========================= */
+    #latestDefects {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #222;
+      color: #fff;
+      font-size: 1.2em;
+      padding: 8px 15px;
+      box-shadow: 0 -2px 10px rgba(255,0,0,0.5);
+      white-space: nowrap;
+      overflow: hidden;
+      z-index: 1000;
+    }
+    #latestDefects span {
+      display: inline-block;
+      padding-left: 100%;
+      animation: scrollText 40s linear infinite; /* 🕐 Slow, continuous crawl */
+    }
+    @keyframes scrollText {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-100%); }
+    }
+  </style>
 </head>
 <body>
-  <!-- Big centered clock -->
+  <!-- =========================
+       Clock & date
+       ========================= -->
   <div id="clock"></div>
-  <!-- Date in top-right -->
   <div id="date"></div>
 
+  <!-- =========================
+       Two-shift layout
+       ========================= -->
   <div class="container">
-    <!-- 1st Shift -->
+    <!-- 1st Shift panel -->
     <div class="shift" id="shift1">
       <div class="header">1st Shift</div>
       <div class="metrics">
@@ -164,13 +186,17 @@
       </div>
       <table>
         <thead>
-          <tr><th>Hour</th><th>Parts</th><th>Defects</th></tr>
+          <tr>
+            <th>Hour</th>
+            <th>Parts</th>
+            <th>Defects</th>
+          </tr>
         </thead>
         <tbody id="table1"></tbody>
       </table>
     </div>
 
-    <!-- 2nd Shift -->
+    <!-- 2nd Shift panel -->
     <div class="shift" id="shift2">
       <div class="header">2nd Shift</div>
       <div class="metrics">
@@ -179,46 +205,62 @@
       </div>
       <table>
         <thead>
-          <tr><th>Hour</th><th>Parts</th><th>Defects</th></tr>
+          <tr>
+            <th>Hour</th>
+            <th>Parts</th>
+            <th>Defects</th>
+          </tr>
         </thead>
         <tbody id="table2"></tbody>
       </table>
     </div>
   </div>
 
-  <!-- Subtle fullscreen toggle -->
+  <!-- =========================
+       Fullscreen control + ticker
+       ========================= -->
   <button id="fullscreenBtn" title="Toggle Fullscreen" aria-label="Toggle Fullscreen">⛶</button>
-
-  <!-- Latest Defects ticker -->
   <div id="latestDefects"><span>Loading latest defects…</span></div>
 
   <script>
-    // =============== Clock & Date ===============
+    /* ============================================================
+       Clock & date updater
+       ============================================================ */
     function updateClockAndDate() {
       const now = new Date();
       document.getElementById('clock').textContent = now.toLocaleTimeString();
       document.getElementById('date').textContent = now.toLocaleDateString();
     }
 
-    // =============== Data Fetch ===============
-    // Replace this function with your live Google Sheets fetch.
+    /* ============================================================
+       Simulated data fetch (replace with Google Sheets API)
+       - Keeps structure consistent across all updates
+       - Includes placeholder defectDetails for ticker
+       ============================================================ */
     async function fetchGoogleSheetData() {
-      // Simulated data for demo purposes
+      // Simulate rows per shift
+      const genShiftRows = () => Array.from({ length: 8 }, (_, i) => {
+        const parts = Math.floor(Math.random() * 50 + 100);
+        const defects = Math.floor(Math.random() * 3);
+        // Build placeholder defect detail list matching the defects count
+        const defectDetails = Array.from({ length: defects }, (_, d) => `Defect ${d + 1}`);
+        return {
+          hour: i + 1,
+          parts,
+          defects,
+          defectDetails
+        };
+      });
+
       return {
-        shift1: Array.from({ length: 8 }, (_, i) => ({
-          hour: i + 1,
-          parts: Math.floor(Math.random() * 50 + 100),
-          defects: Math.floor(Math.random() * 3)
-        })),
-        shift2: Array.from({ length: 8 }, (_, i) => ({
-          hour: i + 1,
-          parts: Math.floor(Math.random() * 50 + 100),
-          defects: Math.floor(Math.random() * 3)
-        }))
+        shift1: genShiftRows(),
+        shift2: genShiftRows()
       };
     }
 
-    // =============== UI Helpers ===============
+    /* ============================================================
+       Animation helper for numbers (adds subtle flash)
+       ============================================================ */
     function animateChange(elem, newValue) {
       if (elem.textContent !== newValue) {
         elem.textContent = newValue;
@@ -227,12 +269,15 @@
       }
     }
 
+    /* ============================================================
+       Render a single shift panel (table + TPUT + FTQ)
+       ============================================================ */
     function renderShift(shiftNum, data) {
       const table = document.getElementById(`table${shiftNum}`);
       const tputElem = document.getElementById(`tput${shiftNum}`);
       const ftqElem = document.getElementById(`ftq${shiftNum}`);
 
-      // Render rows
+      // Build table rows as one string for performance
       let rowsHtml = '';
       let totalParts = 0, totalDefects = 0;
 
@@ -241,22 +286,26 @@
         totalDefects += row.defects;
         rowsHtml += `<tr><td>${row.hour}</td><td>${row.parts}</td><td>${row.defects}</td></tr>`;
       });
+
       table.innerHTML = rowsHtml;
 
-      // Update totals
+      // Compute FTQ and update metrics with animation
       const ftq = totalParts === 0 ? 0 : ((totalParts - totalDefects) / totalParts) * 100;
       animateChange(tputElem, totalParts.toString());
       animateChange(ftqElem, `${ftq.toFixed(1)}%`);
 
-      // FTQ colors
+      // FTQ color thresholds
       ftqElem.className = `ftq ${
         ftq >= 98.5 ? 'green' :
-        ftq >= 97 ? 'yellow' :
-        'red'
+        ftq >= 97   ? 'yellow' :
+                      'red'
       }`;
     }
 
-    // =============== Scoreboard Loop (1s) ===============
+    /* ============================================================
+       Scoreboard update loop (every 1 second)
+       - Decoupled from ticker
+       ============================================================ */
     async function updateScoreboard() {
       try {
         const data = await fetchGoogleSheetData();
@@ -267,34 +316,45 @@
       }
     }
 
-    // =============== Ticker Logic (decoupled) ===============
+    /* ============================================================
+       Ticker message builder
+       - Shows ONLY current shift (for now: Shift 1) & its latest hour
+       - Appends placeholder defect details: "Defect 1, Defect 2"
+       - If no defects: "No defects reported"
+       ============================================================ */
     function buildDefectsMessage(data) {
-      const messages = [];
-      const last1 = data.shift1?.[data.shift1.length - 1];
-      const last2 = data.shift2?.[data.shift2.length - 1];
+      // Current shift placeholder: Shift 1 (we'll add time-based logic later)
+      const shiftName = 'Shift 1';
+      const rows = data.shift1 || [];
+      const last = rows[rows.length - 1];
 
-      if (last1 && last1.defects > 0) {
-        messages.push(`Shift 1 Hour ${last1.hour}: ${last1.defects} defect(s)`);
+      if (!last) return `${shiftName}: No data available`;
+
+      if (last.defects > 0) {
+        const details = (Array.isArray(last.defectDetails) && last.defectDetails.length > 0)
+          ? last.defectDetails.join(', ')
+          : Array.from({ length: last.defects }, (_, i) => `Defect ${i + 1}`).join(', ');
+        return `${shiftName} Hour ${last.hour}: ${last.defects} defect(s) — ${details}`;
       }
-      if (last2 && last2.defects > 0) {
-        messages.push(`Shift 2 Hour ${last2.hour}: ${last2.defects} defect(s)`);
-      }
-      if (messages.length === 0) {
-        messages.push('No defects reported');
-      }
-      return messages.join(' | ');
+
+      return `${shiftName} Hour ${last.hour}: No defects reported`;
     }
 
+    /* ============================================================
+       Ticker loop (decoupled)
+       - Scrolls endlessly; only updates DOM when content changes
+       ============================================================ */
     let lastDefectsMessage = '';
 
     async function checkDefectsTicker() {
       try {
         const data = await fetchGoogleSheetData();
         const newMessage = buildDefectsMessage(data);
+
+        // Only replace inner <span> when message actually changes
         if (newMessage !== lastDefectsMessage) {
           lastDefectsMessage = newMessage;
           const ticker = document.getElementById('latestDefects');
-          // Replace inner span only when message changes
           ticker.innerHTML = `<span>${newMessage}</span>`;
         }
       } catch (err) {
@@ -302,7 +362,9 @@
       }
     }
 
-    // =============== Fullscreen Toggle ===============
+    /* ============================================================
+       Fullscreen control
+       ============================================================ */
     function toggleFullScreen() {
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen();
@@ -310,19 +372,26 @@
         document.exitFullscreen();
       }
     }
-    document.getElementById('fullscreenBtn').addEventListener('click', toggleFullScreen);
 
-    // =============== Bootstrapping ===============
+    /* ============================================================
+       Bootstrapping: start all loops without truncation
+       ============================================================ */
     function startLoops() {
+      // Initial paints
       updateClockAndDate();
       updateScoreboard();
       checkDefectsTicker();
 
-      setInterval(updateClockAndDate, 1000);   // Clock/date
+      // Timers
+      setInterval(updateClockAndDate, 1000);   // Clock/date (1s)
       setInterval(updateScoreboard, 1000);     // Scoreboard (1s)
-      setInterval(checkDefectsTicker, 15000);  // Ticker (15s)
+      setInterval(checkDefectsTicker, 5000);   // Ticker check (5s, decoupled)
     }
 
+    // Bind fullscreen control
+    document.getElementById('fullscreenBtn').addEventListener('click', toggleFullScreen);
+
+    // DOM ready guards
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', startLoops);
     } else {
