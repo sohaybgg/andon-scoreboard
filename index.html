@@ -307,7 +307,59 @@
       }`;
     }
 
+   
     /* ============================================================
+   Shift hour definitions (used for live mapping)
+   ============================================================ */
+const firstShiftHours = [
+  { hour: 1, start: "06:00", end: "07:00" },
+  { hour: 2, start: "07:00", end: "08:00" },
+  { hour: 3, start: "08:00", end: "09:00" },
+  { hour: 4, start: "09:00", end: "10:00" },
+  { hour: 5, start: "10:00", end: "11:30" },
+  { hour: 6, start: "11:30", end: "12:30" },
+  { hour: 7, start: "12:30", end: "13:30" },
+  { hour: 8, start: "13:30", end: "14:30" }
+];
+
+const secondShiftHours = [
+  { hour: 1, start: "14:30", end: "15:30" },
+  { hour: 2, start: "15:30", end: "16:30" },
+  { hour: 3, start: "16:30", end: "17:30" },
+  { hour: 4, start: "17:30", end: "18:30" },
+  { hour: 5, start: "18:30", end: "20:00" }, // 🍽️ lunch block
+  { hour: 6, start: "20:00", end: "21:00" },
+  { hour: 7, start: "21:00", end: "22:00" },
+  { hour: 8, start: "22:00", end: "23:00" }
+];
+
+/* ============================================================
+   Determine current shift and hour based on time
+   ============================================================ */
+function getCurrentShiftHour() {
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  const parseTime = t => {
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + m;
+  };
+
+  for (const entry of firstShiftHours) {
+    if (currentMinutes >= parseTime(entry.start) && currentMinutes < parseTime(entry.end)) {
+      return { shift: "1", hour: entry.hour };
+    }
+  }
+
+  for (const entry of secondShiftHours) {
+    if (currentMinutes >= parseTime(entry.start) && currentMinutes < parseTime(entry.end)) {
+      return { shift: "2", hour: entry.hour };
+    }
+  }
+
+  return null; // Outside shift hours
+}
+     /* ============================================================
        Scoreboard update loop (every 1 second)
        - Decoupled from ticker
        ============================================================ */
@@ -320,6 +372,44 @@
         console.error('Scoreboard update failed:', err);
       }
     }
+    /* ============================================================
+   Time-aware scoreboard updater (non-destructive)
+   ============================================================ */
+async function updateScoreboardByTime() {
+  try {
+    const current = getCurrentShiftHour();
+    if (!current) return;
+
+    const data = await fetchGoogleSheetData();
+    const shiftData = current.shift === "1" ? data.shift1 : data.shift2;
+    const table = document.getElementById(`table${current.shift}`);
+    const tputElem = document.getElementById(`tput${current.shift}`);
+    const ftqElem = document.getElementById(`ftq${current.shift}`);
+
+    const existingRows = table.querySelectorAll("tr");
+    const newRows = Array.from(existingRows).map(row => row.outerHTML);
+
+    const rowData = shiftData[current.hour - 1];
+    const newRowHtml = `<tr><td>${rowData.hour}</td><td>${rowData.parts}</td><td>${rowData.defects}</td></tr>`;
+    newRows[current.hour - 1] = newRowHtml;
+    table.innerHTML = newRows.join("");
+
+    const totalParts = shiftData.reduce((sum, r) => sum + r.parts, 0);
+    const totalDefects = shiftData.reduce((sum, r) => sum + r.defects, 0);
+    const ftq = totalParts === 0 ? 0 : ((totalParts - totalDefects) / totalParts) * 100;
+
+    animateChange(tputElem, totalParts.toString());
+    animateChange(ftqElem, `${ftq.toFixed(1)}%`);
+
+    ftqElem.className = `ftq ${
+      ftq >= 98.5 ? 'green' :
+      ftq >= 97   ? 'yellow' :
+                    'red'
+    }`;
+  } catch (err) {
+    console.error('Time-aware scoreboard update failed:', err);
+  }
+}
 
     /* ============================================================
        Ticker message builder
@@ -391,6 +481,7 @@
       setInterval(updateClockAndDate, 1000);   // Clock/date (1s)
       setInterval(updateScoreboard, 1000);     // Scoreboard (1s)
       setInterval(checkDefectsTicker, 5000);   // Ticker check (5s, decoupled)
+      setInterval(updateScoreboardByTime, 1000); // Time-aware updater
     }
 
     // Bind fullscreen control
